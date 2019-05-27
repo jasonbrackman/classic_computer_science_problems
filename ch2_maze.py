@@ -1,12 +1,14 @@
 from __future__ import annotations
 from enum import Enum
-from typing import List, NamedTuple, Optional, TypeVar
+from typing import Callable, List, NamedTuple, Optional, TypeVar
 import random
+from math import sqrt
+
 from ch2_search_patterns import (
     dfs,
     bfs,
     node_to_path,
-    # astar,
+    astar,
     Node,
 )
 
@@ -105,6 +107,22 @@ class Maze:
         self._grid[self.goal.row][self.goal.column] = Cell.GOAL
 
 
+def euclidean_distance(goal: MazeLocation) -> Callable[[MazeLocation], float]:
+    def distance(ml: MazeLocation) -> float:
+        xdist: int = ml.column - goal.column
+        ydist: int = ml.row - goal.row
+        return sqrt((xdist * xdist) + (ydist * ydist))
+    return distance
+
+
+def manhattan_distance(goal: MazeLocation) -> Callable[[MazeLocation], float]:
+    def distance(ml: MazeLocation) -> float:
+        xdist: int = abs(ml.column - goal.column)
+        ydist: int = abs(ml.row - goal.row)
+        return (xdist + ydist)
+    return distance
+
+
 if __name__ == "__main__":
     # Test DFS
     m: Maze = Maze()
@@ -119,8 +137,7 @@ if __name__ == "__main__":
         m.clear(path1)
 
     # Test BFS
-    solution2: Optional[Node[MazeLocation]] = bfs(m.start, m.goal_test,
-                                                  m.successors)
+    solution2: Optional[Node[MazeLocation]] = bfs(m.start, m.goal_test, m.successors)
     if solution2 is None:
         print("No solution found using breadth-first search!")
     else:
@@ -128,3 +145,13 @@ if __name__ == "__main__":
         m.mark(path2)
         print(m)
         m.clear(path2)
+
+    # Test A*
+    distance: Callable[[MazeLocation], float] = manhattan_distance(m.goal)
+    solution3: Optional[Node[MazeLocation]] = astar(m.start, m.goal_test, m.successors, distance)
+    if solution3 is None:
+        print("No solution found using A*!")
+    else:
+        path3: List[MazeLocation] = node_to_path(solution3)
+        m.mark(path3)
+        print(m)
