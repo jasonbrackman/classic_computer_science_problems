@@ -1,6 +1,7 @@
 # Useful example as it is my first case of seeing type declarations in this way.
 
 from typing import Dict
+
 memo: Dict[int, int] = {0: 0, 1: 1}  # our base cases
 
 
